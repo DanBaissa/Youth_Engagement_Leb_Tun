@@ -1,0 +1,170 @@
+---
+title: "Pilot Data Cleaner"
+author: "Daniel K Baissa, Melani Cammett, and Aytug Sasmaz"
+date: "December 12, 2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+library(rstanarm)
+library(tidyverse)
+library(data.table)
+library(MASS)
+```
+
+## Loading in data
+
+I will start by creating a function to automatically set up the data.
+
+All of this is a work in progress
+```{r loading datasets}
+# Creating a function to load datasets
+
+data_cleaner <- function(d){
+ 
+  df <- read_csv(d) %>% #reading in the data
+  slice(c(-1, -2)) #qualtrics adds 2 rows of unnecessary headers. This removes them.
+
+# Cleaning up the conjoint data. 
+# Note, this is not very efficient memory wise 
+# and may need to be tuned up for larger datasets
+
+names <- colnames(df)
+
+new_names <- paste0(1:243, "_conjoint_friend1")
+new_names2 <- paste0(1:243, "_conjoint_friend2")
+
+df2 <- df %>% 
+  setnames(old = names[246:488], new = new_names) %>%
+  setnames(old = names[489:731], new = new_names2)
+    
+  
+test2 <- df2 %>%  
+    pivot_longer(
+          cols = ends_with("friend1"),
+          names_to = "Conjoint_first_permutation",
+          values_to = "Conjoint_first_permutation_answer") %>%
+  filter(!is.na(Conjoint_first_permutation_answer)) %>%  
+    pivot_longer(
+          cols = ends_with("_friend2"),
+          names_to = "Conjoint_second_permutation",
+          values_to = "Conjoint_second_permutation_answer") %>%
+    filter(!is.na(Conjoint_second_permutation_answer)) %>%
+   pivot_longer(
+          cols = starts_with("ptt"),
+          names_to = "Petition_Experiment_Treatment",
+          values_to = "Petition_Experiment_Treatment_Answer") %>%
+  filter(!is.na(Petition_Experiment_Treatment_Answer))
+}
+
+
+
+
+```
+
+
+Now that the function is created, we can use it to make our data.
+There will be a warning, but it is totally ok for now.
+
+```{r loading data, message=FALSE, warning=FALSE}
+
+csv <- c("D:/Lebanon_data/LEB Youth Civic Engagement ENG - postcut_December 11, 2020_21.29.csv",
+         "D:/Lebanon_data/LEB Youth Civic Engagement ARA - postcut_December 11, 2020_22.09.csv")
+
+ENG <- data_cleaner(csv[1])
+ARA <- data_cleaner(csv[2])
+
+# For now I am just going to force the two datasets to have the same variable names
+# colnames(ENG)
+# colnames(ARA)
+
+ARA <- ARA %>% 
+  setnames(old = colnames(ARA), new = colnames(ENG)) 
+
+df <- rbind(ENG, ARA)
+
+
+```
+
+
+## Petition Signing distribution 
+
+How many people actually signed the petition?
+Lets find out. 
+
+```{r Signing, echo=FALSE}
+
+ggplot(df, aes(x = as.double(Q144)))+
+  geom_histogram(bins = 3, fill="white", color="black")+
+  labs(title="Petition Signing",x="", y = "Count")+
+  theme_classic()
+
+```
+
+Lets do some basic stats on the petition experiment. 
+Here is a simple logistic regression to see if the control group is different from any of the treatments. 
+
+```{r too simple logits}
+
+# colnames(df)
+# unique(df$Petition_Experiment_Treatment)
+
+df2 <- df %>% 
+  filter(Petition_Experiment_Treatment == "ptt_treat_control_fo" | Petition_Experiment_Treatment == "ptt_treat_eco_foll") 
+
+df2$pt_econ_treatment <- 0
+df2$pt_econ_treatment[which(df2$Petition_Experiment_Treatment == "ptt_treat_eco_foll")] <- 1
+df2$signed <- 0
+df2$signed[which(df2$Q144 > 0)] <- 1
+
+test <- glm(signed ~ pt_econ_treatment, data = df2, family = binomial())
+
+summary(test)
+
+
+
+```
+
+
+```{r warning=TRUE, include=FALSE}
+m <- polr(as.factor(Q144) ~ Petition_Experiment_Treatment , data = df, Hess=TRUE)
+# summary(m)
+## store table
+(ctable <- coef(summary(m)))
+p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
+
+```
+
+```{r}
+## combined table
+(ctable <- cbind(ctable, "p value" = p))
+```
+
+
+The Covid Treatment was the treatment left out for comparison by the model. Lets take a look at that.
+
+```{r, Ordered Logit detail, include=FALSE}
+df2 <- df %>%
+  filter(Petition_Experiment_Treatment == "ptt_treat_control_fo" | Petition_Experiment_Treatment == "ptt_cont_foll")
+
+
+
+m2 <- polr(as.factor(Q144) ~ Petition_Experiment_Treatment , data = df2, Hess=TRUE)
+# summary(m2)
+## store table
+(ctable <- coef(summary(m2)))
+p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
+
+```
+
+```{r}
+## combined table
+(ctable <- cbind(ctable, "p value" = p))
+```
+
+Something appears to be going on here, but the N is so small that it could still be chance
