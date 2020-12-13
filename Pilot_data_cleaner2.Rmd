@@ -3,8 +3,8 @@ title: "Pilot Data Cleaner"
 author: "Daniel K Baissa, Melani Cammett, and Aytug Sasmaz"
 date: "December 12, 2020"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -22,6 +22,7 @@ library(MASS)
 I will start by creating a function to automatically set up the data.
 
 All of this is a work in progress
+bla bla bla bla
 ```{r loading datasets}
 # Creating a function to load datasets
 
@@ -149,7 +150,6 @@ Below are some statements related to your household income. Which of these state
 ```{r}
 summary(as.double(df$dem_income1))
 
-#line of code
 
 ```
 ```{r}
