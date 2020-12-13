@@ -127,17 +127,34 @@ ggplot(df, aes(x = gender))+
 
 ```
 
+### Religious demographics
+
+```{r}
+summary(as.double(df$att_identity))
+ggplot(df, aes(x = as.double(att_identity)))+
+  geom_histogram(bins = 7, fill="white", color="black")+
+  labs(title="att_identity",x="", y = "Count")+
+  theme_classic()
+
+```
+
+```{r}
+
+```
+
+
 ### Income distribution
 
 Below are some statements related to your household income. Which of these statements comes closest to describing your household income?
 ```{r}
 summary(as.double(df$dem_income1))
 
+#line of code
 
 ```
 ```{r}
 ggplot(df, aes(x = as.double(dem_income1)))+
-  geom_histogram(bins = 3, fill="white", color="black")+
+  geom_histogram(bins = 4, fill="white", color="black")+
   labs(title="Which of these statements comes closest to describing your household income?",x="", y = "Count")+
   theme_classic()
 
@@ -151,7 +168,7 @@ summary(as.double(df$dem_income2))
 ```
 ```{r}
 ggplot(df, aes(x = as.double(dem_income2)))+
-  geom_histogram(bins = 3, fill="white", color="black")+
+  geom_histogram(bins = 9, fill="white", color="black")+
   labs(title="what is your household’s total net income in Lebanese Liras (L.L.) in a typical month?",x="", y = "Count")+
   theme_classic()
 
@@ -166,7 +183,7 @@ summary(as.double(df$dem_edu))
 ```
 ```{r}
 ggplot(df, aes(x = as.double(dem_edu)))+
-  geom_histogram(bins = 3, fill="white", color="black")+
+  geom_histogram(bins = 10, fill="white", color="black")+
   labs(title="What is the highest level of education that you completed?",x="", y = "Count")+
   theme_classic()
 
@@ -177,7 +194,7 @@ What is your father’s education level?
 ```{r}
 summary(as.double(df$dem_fatheredu))
 ggplot(df, aes(x = as.double(dem_fatheredu)))+
-  geom_histogram(bins = 3, fill="white", color="black")+
+  geom_histogram(bins = 11, fill="white", color="black")+
   labs(title="What is your father’s education level? ",x="", y = "Count")+
   theme_classic()
 
@@ -188,7 +205,7 @@ ggplot(df, aes(x = as.double(dem_fatheredu)))+
 
 summary(as.double(df$dem_motheredu))
 ggplot(df, aes(x = as.double(dem_motheredu)))+
-  geom_histogram(bins = 3, fill="white", color="black")+
+  geom_histogram(bins = 10, fill="white", color="black")+
   labs(title="What is your mother’s education level?",x="", y = "Count")+
   theme_classic()
 
