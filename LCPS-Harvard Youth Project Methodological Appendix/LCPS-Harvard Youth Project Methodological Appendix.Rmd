@@ -1,0 +1,82 @@
+---
+title: "LCPS-Harvard Youth Project Methodological Appendix"
+author: "Daniel K Baissa, Melani Cammett, and Aytug Sasmaz"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##
+
+In this document, we will record the choices we made during the data collection period and provide justifications for our methodological choices. 
+
+## Age Groups
+
+**Lebanon:** To ensure that we collect data from participants who are at least 18 years of age (completed at least 18 years in life), we constrained data collection to those who were born in 2001 as the youngest age group. The oldest age group who were eligible to answer our survey was those who were born in 1990. 
+
+**Tunisia:** To ensure that we collect data from participants who are at least 18 years of age (completed at least 18 years in life), we constrained data collection to those who were born in 2001 as the youngest age group. 
+
+To observe the experiences of the revolutionary youth cohort in civic & political engagement in Tunisia, we also collected data from those who were 18-30 during the revolution. Following the same logic as above, we defined the revolutionary youth cohort as those who were born between 1 January 1980 and 31 December 1991. Thus, in Tunisia, we collected data from those who were born between 1 January 1980 and 31 December 2001. 
+
+Data type                                             | Birth year: 1990-2001 |Birth year: 1980-1991
+-------------                                         | -------------         |-------------
+Initial screening                                     | x                     | x
+Consent                                               | x                     | x
+Demographics                                          | x                     | x
+Attitudes towards the Economic System                 | x                     | x
+Attitudes towards the Political System                | x                     | x
+Social Attitudes                                      | x                     | x
+Social Ties                                           | x                     | x
+Navigation of the Economy                             | x                     | x
+Leisure                                               | x                     | 
+Civic Behavior                                        | x                     | x
+Political Behavior I                                  | x                     | x
+Political Behavior II                                 | x                     | 
+Participation in 2010-11 Movement                     |                       | x
+Participation in Parties, CSO, Informal Collectives   |                       | x
+Organization conjoint experiment                      |                       | x
+Priorities and concerns                               | x                     | x
+Corona questions                                      | x                     | x
+Tolerance for neighbors                               | x                     | x
+
+
+## Advantages of the Online Survey over Face-to-Face Surveys and Phone Surveys during a Pandemic
+
+### Some Decisions Regarding Qualtrics
+Only a few questions required response from the respondents. These were the questions that tested the eligibility of the potential participants before the informed consent and the informed consent questions, as well. Respondents were able to skip all other questions in the survey. However, they were “requested” response with a reminder message that appeared before moving to the next page if there were unanswered questions on that specific page.
+For most of the questions, the answer options were re-coded to ease the analysis during and after the data collection. In re-coded questions, “Don’t know”s were recoded as 98 or 99 unless specified otherwise in the codebook. 
+In “Have you voted…?” question 97 is specified as “I wasn’t old enough to vote then”.
+
+
+### Tunisian Youth and Lebanese Youth on Facebook
+According to the last wave of the Arab Barometer (2018), an overwhelming majority of both Tunisian and Lebanese youth mention Facebook as one of the social media services they actively use. More than 88 percent of the youth between 18 and 29 years old report that they actively use Facebook. Moreover, more than 85% of young adults in Tunisia (a proxy for the “revolutionary youth cohort whom we define formally as between 28 and 39 years old) also reported active use of Facebook. By comparison, only 25-26% of the youth in Lebanon and 7-8% of young people in Tunisia actively use Twitter. 
+
+Mentions                      | 18-29 | 30-39 | 40-49 | 50 and more
+---------                     |-------|-------|-------|------------
+Mentioned Facebook in Lebanon | 89.4  | 82.6  | 80.6  | 65.9
+Mentioned Twitter in Lebanon  | 25.7  | 23.2  | 26.4  | 14.6
+Mentioned Facebook in Tunisia | 88.3  | 85.8  | 82.4  | 77.8
+Mentioned Twitter in Tunisia  | 7.3   | 5.1   | 3.5   | 2.4
+
+
+
+```{r notes, include=FALSE}
+#Add analyses that suggest that various demographic characteristics (age, gender, income level, education level) do not affect the probability of “actively using Facebook” to be able to claim that almost everybody is using Facebook without any systematic differences. 
+```
+
+## Data Collection Timeline
+
+## Targeting Advertising on Facebook
+
+## Poststratification and Weighting
+
+## Comparison with F2F Surveys with Youth
+
+## Test of Selection on Unobservables 
+
+## Verification and Validation 
+Answer the following questions: How do you know that the survey takers were actually from Tunisia and Lebanon? How do you know that they are not bots just wanted to benefit from the incentives? 
