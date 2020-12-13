@@ -79,18 +79,122 @@ csv <- c("D:/Lebanon_data/LEB Youth Civic Engagement ENG - postcut_December 11, 
 ENG <- data_cleaner(csv[1])
 ARA <- data_cleaner(csv[2])
 
+# For now I will remove the Q_RecaptchaScore
+
+ARA$Q_RecaptchaScore <- NULL
+ENG$Q_RecaptchaScore <- NULL
+
+# There is an extra att_women in English "att_women_4"
+
+ENG$att_women_4 <- NULL
+
+
 # For now I am just going to force the two datasets to have the same variable names
-# colnames(ENG)
-# colnames(ARA)
 
 ARA <- ARA %>% 
   setnames(old = colnames(ARA), new = colnames(ENG)) 
 
 df <- rbind(ENG, ARA)
 
+```
+
+## Demographic distribution 
+
+```{r gender, echo=FALSE}
+
+# Female = 10
+# Male = 9
+
+df$gender <- 2
+df$gender[which(as.double(df$dem_gender) == 10)] <- 1
+df$gender[which(as.double(df$dem_gender) == 9)] <- 0
+
+summary(df$gender) #Median person is a man and there seems to be a lot more men
+
+
+
+
+
 
 ```
 
+```{r}
+
+ggplot(df, aes(x = gender))+
+  geom_histogram(bins = 3, fill="white", color="black")+
+  labs(title="Gender Distribution",x="", y = "Count")+
+  theme_classic()
+
+```
+
+### Income distribution
+
+Below are some statements related to your household income. Which of these statements comes closest to describing your household income?
+```{r}
+summary(as.double(df$dem_income1))
+
+
+```
+```{r}
+ggplot(df, aes(x = as.double(dem_income1)))+
+  geom_histogram(bins = 3, fill="white", color="black")+
+  labs(title="Which of these statements comes closest to describing your household income?",x="", y = "Count")+
+  theme_classic()
+
+```
+To the best of your knowledge, what is your household’s total net income in Lebanese Liras (L.L.) in a typical month? 
+
+```{r}
+summary(as.double(df$dem_income2))
+
+
+```
+```{r}
+ggplot(df, aes(x = as.double(dem_income2)))+
+  geom_histogram(bins = 3, fill="white", color="black")+
+  labs(title="what is your household’s total net income in Lebanese Liras (L.L.) in a typical month?",x="", y = "Count")+
+  theme_classic()
+
+```
+
+
+What is the highest level of education that you completed?
+
+```{r}
+summary(as.double(df$dem_edu))
+
+```
+```{r}
+ggplot(df, aes(x = as.double(dem_edu)))+
+  geom_histogram(bins = 3, fill="white", color="black")+
+  labs(title="What is the highest level of education that you completed?",x="", y = "Count")+
+  theme_classic()
+
+```
+
+What is your father’s education level? 
+
+```{r}
+summary(as.double(df$dem_fatheredu))
+ggplot(df, aes(x = as.double(dem_fatheredu)))+
+  geom_histogram(bins = 3, fill="white", color="black")+
+  labs(title="What is your father’s education level? ",x="", y = "Count")+
+  theme_classic()
+
+```
+
+
+```{r}
+
+summary(as.double(df$dem_motheredu))
+ggplot(df, aes(x = as.double(dem_motheredu)))+
+  geom_histogram(bins = 3, fill="white", color="black")+
+  labs(title="What is your mother’s education level?",x="", y = "Count")+
+  theme_classic()
+
+```
+
+Mother's are better educated than fathers in this sample
 
 ## Petition Signing distribution 
 
@@ -163,8 +267,7 @@ p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
 ```
 
 ```{r}
-## combined table
-(ctable <- cbind(ctable, "p value" = p))
+signif((ctable <- cbind(ctable, "p value" = p)),3)
 ```
 
 Something appears to be going on here, but the N is so small that it could still be chance
