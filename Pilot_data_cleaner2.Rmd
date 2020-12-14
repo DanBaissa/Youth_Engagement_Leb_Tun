@@ -132,9 +132,10 @@ We can use approximately:
 ```{r echo=FALSE, warning=FALSE}
 length(df$StartDate)
 ```
-Of which, most if not all are 100% complete.
+Of which, most if not all are ~100% complete.
 
 The large discrepancy is because Qualtrics automatically completes the observation after 72 hours.
+\newpage
 
 ## Manipulation Check
 
@@ -171,25 +172,24 @@ df <- df %>%
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-plot_data <- df %>% 
-  group_by(Manipulation_Check2, Petition_Experiment_Treatment_Check) %>% 
-  tally %>% 
-  mutate(percent = n/sum(n))
-
+# plot_data <- df %>% 
+#   group_by(Manipulation_Check2, Petition_Experiment_Treatment_Check) %>% 
+#   tally %>% 
+#   mutate(percent = n/sum(n))
+# 
 
 df %>% 
-  select(one_of(c("Manipulation_Check2", "Petition_Experiment_Treatment_Check"))) %>% 
   ggplot(mapping = aes(x = Manipulation_Check2)) +
   geom_bar()+
   facet_wrap(~Petition_Experiment_Treatment_Check)+
-  theme(axis.text.x = element_text(angle = 90))
-# +
-  
-  # labs(x = )
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "")
   
 ```
 
-## Demographic distribution 
+\newpage
+
+## Demographic distributions 
 
 By governorate
 
