@@ -3,8 +3,8 @@ title: "Pilot Data Cleaner"
 author: "Daniel K Baissa, Melani Cammett, and Aytug Sasmaz"
 date: "December 12, 2020"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -14,7 +14,8 @@ library(readr)
 library(rstanarm)
 library(tidyverse)
 library(data.table)
-library(MASS)
+library(dplyr)
+
 ```
 
 ## Loading in data
@@ -22,8 +23,10 @@ library(MASS)
 I will start by creating a function to automatically set up the data.
 
 All of this is a work in progress
-bla bla bla bla
-```{r loading datasets}
+
+```{r loading datasets, include=FALSE}
+
+
 # Creating a function to load datasets
 
 data_cleaner <- function(d){
@@ -37,13 +40,21 @@ data_cleaner <- function(d){
 
 names <- colnames(df)
 
+conjoint1 <- df %>% 
+  select(ends_with("_Q171") | ends_with("_friend1")) %>% 
+  colnames()
+
+conjoint2 <- df %>% 
+  select(ends_with("_Q172")| ends_with("_friend2")) %>% 
+  colnames()
+
 new_names <- paste0(1:243, "_conjoint_friend1")
 new_names2 <- paste0(1:243, "_conjoint_friend2")
 
 df2 <- df %>% 
-  setnames(old = names[246:488], new = new_names) %>%
-  setnames(old = names[489:731], new = new_names2)
-    
+  setnames(old = conjoint1[1:243], new = new_names) %>%
+  setnames(old = conjoint2[1:243], new = new_names2)
+  
   
 test2 <- df2 %>%  
     pivot_longer(
@@ -72,10 +83,12 @@ test2 <- df2 %>%
 Now that the function is created, we can use it to make our data.
 There will be a warning, but it is totally ok for now.
 
-```{r loading data, message=FALSE, warning=FALSE}
+```{r loading data, include=FALSE}
 
-csv <- c("D:/Lebanon_data/LEB Youth Civic Engagement ENG - postcut_December 11, 2020_21.29.csv",
-         "D:/Lebanon_data/LEB Youth Civic Engagement ARA - postcut_December 11, 2020_22.09.csv")
+
+
+csv <- c("D:/Lebanon_data/LEB Youth Civic Engagement ENG - postcut_December 13, 2020_17.38.csv",
+         "D:/Lebanon_data/LEB Youth Civic Engagement ARA - postcut_December 13, 2020_17.36.csv")
 
 ENG <- data_cleaner(csv[1])
 ARA <- data_cleaner(csv[2])
@@ -97,21 +110,120 @@ ARA <- ARA %>%
 
 df <- rbind(ENG, ARA)
 
+df <- df %>% 
+  mutate(Petition_Experiment_Treatment = recode(Petition_Experiment_Treatment,                                                                                                                  "ptt_treat_control_fo" = "ptt_cont_foll"))
+
+
+```
+
+## How Many Observations
+
+As of the evening of December 13 Qualtrics recorded the following total of responses:  
+
+```{r echo=FALSE, warning=FALSE}
+
+length(read.csv(csv[1])[,1]) + length(read.csv(csv[2])[,1])
+
+```
+
+
+We can use approximately:
+
+```{r echo=FALSE, warning=FALSE}
+length(df$StartDate)
+```
+Of which, most if not all are 100% complete.
+
+The large discrepancy is because Qualtrics automatically completes the observation after 72 hours.
+
+## Manipulation Check
+
+It looks like respondants are heavily biased towards saying "has resulted in corruption and mismanagement of the economy". It was really high even in the control group
+```{r include=FALSE}
+
+df <- df %>% 
+  mutate(Manipulation_Check = recode(petition_manip_check,
+                             `1` = "ensures that the security situation remains stable",
+                             `2` = "has resulted in corruption and mismanagement of the economy",
+                             `3` = "ensures that all confessional groups get access to benefits",
+                             `4` = "encourages the sectarian parties to provide benefits to the population",
+                             `5` = "I do not remember"))
+
+df <- df %>% 
+  mutate(Manipulation_Check2 = recode(petition_manip_check,
+                             `1` = "security remains stable",
+                             `2` = "corruption and mismanagement",
+                             `3` = "confessional get benefits",
+                             `4` = "sectarian parties benefits",
+                             `5` = "I do not remember"))
+
+
+df <- df %>% 
+  mutate(Petition_Experiment_Treatment_Check = recode(Petition_Experiment_Treatment,
+                                                  "ptt_treat_sec_foll" = "Security Benefits",
+                                                  "ptt_treat_eco_foll" = "Economic Hardship",
+                                                  "ptt_treat_bft_foll" = "Economic Benefits",
+                                                  "ptt_treat_cor_foll" = "Coronavirus Response",
+                                                  "ptt_cont_foll" = "Control"))
+                                                                    
+
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_data <- df %>% 
+  group_by(Manipulation_Check2, Petition_Experiment_Treatment_Check) %>% 
+  tally %>% 
+  mutate(percent = n/sum(n))
+
+
+df %>% 
+  select(one_of(c("Manipulation_Check2", "Petition_Experiment_Treatment_Check"))) %>% 
+  ggplot(mapping = aes(x = Manipulation_Check2)) +
+  geom_bar()+
+  facet_wrap(~Petition_Experiment_Treatment_Check)+
+  theme(axis.text.x = element_text(angle = 90))
+# +
+  
+  # labs(x = )
+  
 ```
 
 ## Demographic distribution 
 
-```{r gender, echo=FALSE}
+By governorate
+
+```{r include=FALSE}
+
+df <- df %>% 
+  mutate(Governorate= recode(dem_live_1,
+                             `1` = "Akkar",
+                             `127` = "Baalbek-Hermel",
+                             `213` = "Beirut",
+                             `216` = "Beqaa",
+                             `307` = "Mount Lebanon",
+                             `639` = "Nabatieh",
+                             "763" = "North Lebanon",
+                             `914` = "South Lebanon"))
+
+
+
+
+```
+
+
+```{r gender, include=FALSE}
+
+
 
 # Female = 10
 # Male = 9
 
-df$gender <- 2
-df$gender[which(as.double(df$dem_gender) == 10)] <- 1
-df$gender[which(as.double(df$dem_gender) == 9)] <- 0
+df$gender <- "Other"
+df$gender[which(as.double(df$dem_gender) == 10)] <- "Female"
+df$gender[which(as.double(df$dem_gender) == 9)] <- "Male"
 
-summary(df$gender) #Median person is a man and there seems to be a lot more men
-
+df$gender
 
 
 
@@ -119,27 +231,64 @@ summary(df$gender) #Median person is a man and there seems to be a lot more men
 
 ```
 
-```{r}
+```{r echo=FALSE, fig.height=4, fig.width=8, message=FALSE, warning=FALSE}
 
-ggplot(df, aes(x = gender))+
-  geom_histogram(bins = 3, fill="white", color="black")+
+
+
+ggplot(df, mapping = aes(x = gender)) +
+  geom_bar() +
   labs(title="Gender Distribution",x="", y = "Count")+
-  theme_classic()
+  facet_wrap(~Governorate)
+  
 
 ```
+
+### Age demographics
+
+```{r, echo=FALSE}
+ggplot(df, mapping = aes(x = dem_birthyear, fill = gender)) +
+  geom_bar() +
+  labs(title="Birth Year Distribution",x="", y = "Count")+
+  facet_wrap(~Governorate)+
+  theme(axis.text.x = element_text(angle = 90))
+  
+```
+
 
 ### Religious demographics
 
-```{r}
-summary(as.double(df$att_identity))
-ggplot(df, aes(x = as.double(att_identity)))+
-  geom_histogram(bins = 7, fill="white", color="black")+
-  labs(title="att_identity",x="", y = "Count")+
-  theme_classic()
+```{r echo=FALSE, fig.height=8, fig.width=7, message=FALSE, warning=FALSE}
+
+df <- df %>% 
+  mutate(Confession= recode(att_confession,
+                            `1` = "Maronite",
+                            `2` = "Greek Orthodox",
+                            `3` = "Greek Catholic",
+                            `4` = "Armenian Orthodox",
+                            `5` = "Armenian Catholic",
+                            `6` = "Protestant",
+                            `7` = "Syriac Orthodox",
+                            `8` = "Syriac Catholic",
+                            `9` = "Nestorian Assyrian",
+                            `10` = "Chaldean",
+                            `11` = "Coptic",
+                            `12` = "Roman Catholic",
+                            `13` = "Sunni Muslim",
+                            `14` = "Shia Muslim",
+                            `15` = "Ismaili",
+                            `16` = "Druze",
+                            `17` = "Alawite",
+                            `18` = "Jewish"))
+
+ggplot(df, mapping = aes(x = Confession, fill = gender)) +
+  geom_bar() +
+  labs(title="What is your confession as officially listed on your registration card?",x="", y = "Count")+
+  facet_wrap(~Governorate)+
+  theme(axis.text.x = element_text(angle = 90))
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 
 ```
 
@@ -152,13 +301,29 @@ summary(as.double(df$dem_income1))
 
 
 ```
-```{r}
-ggplot(df, aes(x = as.double(dem_income1)))+
-  geom_histogram(bins = 4, fill="white", color="black")+
-  labs(title="Which of these statements comes closest to describing your household income?",x="", y = "Count")+
-  theme_classic()
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+ggplot(df, mapping = aes(x = dem_income1, fill = gender)) +
+  geom_bar() +
+  labs(title="Household Income?",x="", y = "Count")+
+  facet_wrap(~Governorate)+
+  theme(axis.text.x = element_text(angle = 90))
 
 ```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+ggplot(df, mapping = aes(x = dem_income1)) +
+  geom_bar() +
+  labs(title="Household Income?",x="", y = "Count")+
+  facet_wrap(~gender)+
+  theme(axis.text.x = element_text(angle = 90))
+
+```
+
+
 To the best of your knowledge, what is your household’s total net income in Lebanese Liras (L.L.) in a typical month? 
 
 ```{r}
@@ -166,14 +331,27 @@ summary(as.double(df$dem_income2))
 
 
 ```
-```{r}
-ggplot(df, aes(x = as.double(dem_income2)))+
-  geom_histogram(bins = 9, fill="white", color="black")+
-  labs(title="what is your household’s total net income in Lebanese Liras (L.L.) in a typical month?",x="", y = "Count")+
-  theme_classic()
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+ggplot(df, mapping = aes(x = dem_income2)) +
+  geom_bar() +
+  labs(title="What is your household’s total net income in Lebanese Liras a month?",x="", y = "Count")+
+  facet_wrap(~gender)+
+  theme(axis.text.x = element_text(angle = 90))
 
 ```
 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+ggplot(df, mapping = aes(x = dem_income2, fill = gender)) +
+  geom_bar() +
+  labs(title="What is your household’s total net income in Lebanese Liras a month?",x="", y = "Count")+
+  facet_wrap(~Governorate)+
+  theme(axis.text.x = element_text(angle = 90))
+
+```
 
 What is the highest level of education that you completed?
 
@@ -236,7 +414,7 @@ Here is a simple logistic regression to see if the control group is different fr
 # unique(df$Petition_Experiment_Treatment)
 
 df2 <- df %>% 
-  filter(Petition_Experiment_Treatment == "ptt_treat_control_fo" | Petition_Experiment_Treatment == "ptt_treat_eco_foll") 
+  filter(Petition_Experiment_Treatment == "ptt_cont_foll" | Petition_Experiment_Treatment == "ptt_treat_eco_foll") 
 
 df2$pt_econ_treatment <- 0
 df2$pt_econ_treatment[which(df2$Petition_Experiment_Treatment == "ptt_treat_eco_foll")] <- 1
@@ -253,7 +431,8 @@ summary(test)
 
 
 ```{r warning=TRUE, include=FALSE}
-m <- polr(as.factor(Q144) ~ Petition_Experiment_Treatment , data = df, Hess=TRUE)
+library(MASS)
+m <- polr(as.factor(Q144) ~ Petition_Experiment_Treatment + UserLanguage , data = df, Hess=TRUE)
 # summary(m)
 ## store table
 (ctable <- coef(summary(m)))
@@ -261,7 +440,7 @@ p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
 
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 ## combined table
 (ctable <- cbind(ctable, "p value" = p))
 ```
@@ -271,11 +450,10 @@ The Covid Treatment was the treatment left out for comparison by the model. Lets
 
 ```{r, Ordered Logit detail, include=FALSE}
 df2 <- df %>%
-  filter(Petition_Experiment_Treatment == "ptt_treat_control_fo" | Petition_Experiment_Treatment == "ptt_cont_foll")
+  filter(Petition_Experiment_Treatment == "ptt_cont_foll" | Petition_Experiment_Treatment == "ptt_treat_cor_foll")
 
 
-
-m2 <- polr(as.factor(Q144) ~ Petition_Experiment_Treatment , data = df2, Hess=TRUE)
+m2 <- polr(as.factor(Q144) ~ Petition_Experiment_Treatment + UserLanguage , data = df2, Hess=TRUE)
 # summary(m2)
 ## store table
 (ctable <- coef(summary(m2)))
